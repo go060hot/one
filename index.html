@@ -87,11 +87,6 @@
 </div>
 
 <script>
-// ✅ 로그인 체크
-if (localStorage.getItem("auth") !== "true") {
-  alert("접속 권한이 없습니다.");
-  window.location.href = "index.html";
-}
 
 const bossData = [
   { name:"시그너스", difficulties:["EASY","NORMAL"], basePrice:{EASY:0.0455,NORMAL:0.075} },
@@ -305,4 +300,5 @@ renderRightPanel();
 
 </body>
 </html>
+
 
