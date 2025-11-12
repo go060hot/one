@@ -143,7 +143,6 @@ document.getElementById('charNameInput').addEventListener('keydown',(e)=>{
   }
 });
 
-// 🔹 캐릭터 렌더
 function renderCharList(){
   charList.innerHTML='';
   selectedCharacters.forEach((char,index)=>{
@@ -160,6 +159,7 @@ function renderCharList(){
       renderBossPanel();
     });
 
+    // 드래그
     div.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain',index); });
     div.addEventListener('dragover',e=>e.preventDefault());
     div.addEventListener('drop',e=>{
@@ -170,9 +170,9 @@ function renderCharList(){
       selectedCharacters.splice(fromIndex,1);
       selectedCharacters.splice(toIndex,0,temp);
       renderCharList();
-      saveToStorage();
     });
 
+    // 첫번째 줄: 이름 / 금액 / 삭제
     const firstLine = document.createElement('div');
     firstLine.className='char-first-line';
 
@@ -184,32 +184,31 @@ function renderCharList(){
     const sumDiv=document.createElement('div');
     sumDiv.className='char-sum';
     sumDiv.innerText = `${sum.toFixed(2)} 억`;
-
     const del=document.createElement('span');
     del.className='char-delete';
     del.innerText='x';
     del.addEventListener('click',()=>{ 
       selectedCharacters.splice(index,1);
-      renderCharList(); renderBossPanel();
-      saveToStorage();
+      renderCharList(); renderBossPanel(); renderRightPanel();
     });
 
     firstLine.appendChild(nameDiv);
     firstLine.appendChild(sumDiv);
     firstLine.appendChild(del);
 
+    // 두번째 줄: Lv / 직업 / 비고1~3
     const secondLine=document.createElement('div');
     secondLine.className='char-second-line';
 
     const lvInput=document.createElement('input');
     lvInput.placeholder='Lv';
     lvInput.value=char.level;
-    lvInput.addEventListener('input',()=>{ char.level=lvInput.value; saveToStorage(); });
+    lvInput.addEventListener('input',()=>{char.level=lvInput.value;});
 
     const jobInput=document.createElement('input');
     jobInput.placeholder='직업';
     jobInput.value=char.job;
-    jobInput.addEventListener('input',()=>{ char.job=jobInput.value; saveToStorage(); });
+    jobInput.addEventListener('input',()=>{char.job=jobInput.value;});
 
     secondLine.appendChild(lvInput);
     secondLine.appendChild(jobInput);
@@ -218,7 +217,7 @@ function renderCharList(){
       const noteInput=document.createElement('input');
       noteInput.placeholder=`비고${i+1}`;
       noteInput.value=char.notes[i];
-      noteInput.addEventListener('input',()=>{ char.notes[i]=noteInput.value; saveToStorage(); });
+      noteInput.addEventListener('input',()=>{ char.notes[i]=noteInput.value; });
       secondLine.appendChild(noteInput);
     }
 
@@ -226,8 +225,7 @@ function renderCharList(){
     div.appendChild(secondLine);
     charList.appendChild(div);
   });
-
-  // 총합
+  // 🔹 총합 표시 (왼쪽 패널 하단)
   let total = 0;
   selectedCharacters.forEach(char=>{
     total += char.bosses.reduce((a,b)=>a+b.basePrice,0);
@@ -235,7 +233,7 @@ function renderCharList(){
   totalSum.innerText = `합계: ${total.toLocaleString()} 억`;
 }
 
-// 🔹 보스 렌더
+
 function renderBossPanel(){
   const selectedChar = selectedCharacters.find(c=>c.selected);
   if(!selectedChar){
@@ -265,12 +263,14 @@ function renderBossPanel(){
       span.innerText=diff;
       span.classList.add(diff);
 
+      // 선택 여부
       const isSelected = selectedDiff === diff;
       if(isSelected) span.classList.add('selected');
 
+      // 회색 처리 조건
       if((selectedDiff && !isSelected) || (totalSelected >= 12 && !isSelected)){
-        span.style.opacity = '0.3';
-        span.style.pointerEvents = 'none';
+        span.style.opacity = '0.3'; // 회색처럼 보이게
+        span.style.pointerEvents = 'none'; // 클릭 막기
       } else {
         span.style.opacity = '1';
         span.style.pointerEvents = 'auto';
@@ -288,7 +288,7 @@ function renderBossPanel(){
         }
         renderBossPanel();
         renderCharList();
-        saveToStorage();
+        renderRightPanel();
       });
 
       diffDiv.appendChild(span);
