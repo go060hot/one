@@ -18,10 +18,10 @@
   .char-first-line { display:flex; align-items:center; justify-content:space-between; }
   .char-name {
     font-weight: bold;
-    width: 103px;  /* 최대 너비를 100px로 고정 */
-    overflow: hidden;   /* 내용이 넘치면 숨김 */
-    text-overflow: ellipsis; /* 넘친 부분은 '…'으로 표시 */
-    white-space: nowrap; /* 텍스트를 한 줄로 유지 */
+    width: 103px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
   .char-sum { min-width:100px; margin-left:20px; text-align:right; flex-shrink:0; }
   .char-delete { cursor:pointer; color:red; margin-left:10px; flex-shrink:0; }
@@ -33,45 +33,34 @@
   /* 보스 리스트 */
 .boss-item {
   display: grid;
-  grid-template-columns: 120px repeat(5, 80px); /* 보스이름 + 최대 난이도 5개 */
+  grid-template-columns: 120px repeat(5, 80px);
   align-items: center;
   margin-bottom: 5px;
 }
 
-.boss-name {
-  /* 첫 번째 컬럼에 들어가는 보스 이름 */
-}
-
-.boss-difficulty {
-  display: contents; /* span이 grid cell을 그대로 차지하게 함 */
-}
-
 .boss-difficulty span {
   display: inline-block; 
-  width: 65px;  /* 각 난이도 열 폭 고정 */
-  text-align: center; /* 중앙 정렬 */
+  width: 65px;
+  text-align: center;
+  cursor:pointer; padding:2px 5px; border-radius:3px; color:white; font-size:0.85em;
 }
 
-  /* 난이도별 색상 */
-  .boss-difficulty span { cursor:pointer; padding:2px 5px; border-radius:3px; color:white;  font-size:0.85em; /* 글자 작게 */ }
-  .boss-difficulty span.EASY { background:#828282; box-shadow: inset 0 0 0 0.5px #646464;  }
-  .boss-difficulty span.NORMAL { background:#37c3c3; box-shadow: inset 0 0 0 0.5px #37b7b7;  }
-  .boss-difficulty span.HARD { background:#ff69b4; box-shadow: inset 0 0 0 0.5px #ff32b1; }
-  .boss-difficulty span.CHAOS { background:#3c3c3c; color:yellow; box-shadow: inset 0 0 0 0.5px yellow; }
-  .boss-difficulty span.EXTREME { background:black; color:red; box-shadow: inset 0 0 0 0.5px red; }
+.boss-difficulty span.EASY { background:#828282; box-shadow: inset 0 0 0 0.5px #646464; }
+.boss-difficulty span.NORMAL { background:#37c3c3; box-shadow: inset 0 0 0 0.5px #37b7b7; }
+.boss-difficulty span.HARD { background:#ff69b4; box-shadow: inset 0 0 0 0.5px #ff32b1; }
+.boss-difficulty span.CHAOS { background:#3c3c3c; color:yellow; box-shadow: inset 0 0 0 0.5px yellow; }
+.boss-difficulty span.EXTREME { background:black; color:red; box-shadow: inset 0 0 0 0.5px red; }
 
-.boss-difficulty span.selected {
-  font-weight: bold;
-  border: none; /* 기존 border 제거 */
-  box-shadow: inset 0 0 0 3px gold; /* 안쪽 테두리 */
-}
+.boss-difficulty span.selected { font-weight:bold; border:none; box-shadow: inset 0 0 0 3px gold; }
+
+#noteArea { width:90%; height:45%; resize:none; font-size:14px; padding:10px; box-sizing:border-box; }
 </style>
 </head>
 <body>
 
 <div class="panel left">
   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-    <input id="charNameInput" placeholder="캐릭터 이름 입력" width:150px;" >
+    <input id="charNameInput" placeholder="캐릭터 이름 입력">
     <div id="totalSum" style="font-weight:bold; white-space:nowrap;">합계: 0 억</div>
   </div>
   <div id="charList"></div>
@@ -82,17 +71,13 @@
 </div>
 
 <div class="panel right">
-  <textarea id="noteArea" placeholder="" 
-    style="width:50%; height:50%; resize:none; font-size:14px; padding:10px; box-sizing:border-box;"></textarea>
+  <textarea id="noteArea" placeholder="메모를 입력하세요"></textarea>
 </div>
 
 <script>
-// ✅ 로그인 체크
-if (localStorage.getItem("auth") !== "true") {
-  alert("접속 권한이 없습니다.");
-  window.location.href = "index.html";
-}
+const STORAGE_KEY = "bossCalcData";
 
+// 예시 보스 데이터
 const bossData = [
   { name:"시그너스", difficulties:["EASY","NORMAL"], basePrice:{EASY:0.0455,NORMAL:0.075} },
   { name:"힐라", difficulties:["HARD"], basePrice:{HARD:0.0575} },
@@ -104,29 +89,17 @@ const bossData = [
   { name:"매그너스", difficulties:["HARD"], basePrice:{HARD:0.0856} },
   { name:"벨룸", difficulties:["CHAOS"], basePrice:{CHAOS:0.0928} },
   { name:"파풀라투스", difficulties:["CHAOS"], basePrice:{CHAOS:0.138} },
-  { name:"스우", difficulties:["NORMAL","HARD","EXTREME"], basePrice:{NORMAL:0.176,HARD:0.542,EXTREME:6.04} },
-  { name:"데미안", difficulties:["NORMAL","HARD"], basePrice:{NORMAL:0.184,HARD:0.515} },
-  { name:"가엔슬", difficulties:["NORMAL","CHAOS"], basePrice:{NORMAL:0.268,CHAOS:0.791} },
-  { name:"루시드", difficulties:["EASY","NORMAL","HARD"], basePrice:{EASY:0.314,NORMAL:0.375,HARD:0.662} },
-  { name:"윌", difficulties:["EASY","NORMAL","HARD"], basePrice:{EASY:0.34,NORMAL:0.433,HARD:0.812} },
-  { name:"더스크", difficulties:["NORMAL","CHAOS"], basePrice:{NORMAL:0.463,CHAOS:0.735} },
-  { name:"듄켈", difficulties:["NORMAL","HARD"], basePrice:{NORMAL:0.5,HARD:0.994} },
-  { name:"진 힐라", difficulties:["NORMAL","HARD"], basePrice:{NORMAL:0.749,HARD:1.12} },
-  { name:"세렌", difficulties:["NORMAL","HARD","EXTREME"], basePrice:{NORMAL:2.66,HARD:3.96,EXTREME:31.5} },
-  { name:"칼로스", difficulties:["EASY","NORMAL","CHAOS","EXTREME"], basePrice:{EASY:3.11,NORMAL:5.61,CHAOS:13.4,EXTREME:43.2} },
-  { name:"대적자", difficulties:["EASY","NORMAL","HARD","EXTREME"], basePrice:{EASY:3.24,NORMAL:5.89,HARD:15.1,EXTREME:49.6} },
-  { name:"카링", difficulties:["EASY","NORMAL","HARD","EXTREME"], basePrice:{EASY:4.19,NORMAL:7.14,HARD:18.3,EXTREME:56.7} },
-  { name:"림보", difficulties:["NORMAL","HARD"], basePrice:{NORMAL:10.8,HARD:25.1} },
-  { name:"발드릭스", difficulties:["NORMAL","HARD"], basePrice:{NORMAL:14.4,HARD:32.4} },
 ];
 
-
-let selectedCharacters = [];
+let selectedCharacters = JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
 
 const charList = document.getElementById('charList');
 const bossList = document.getElementById('bossList');
-const rightPanel = document.getElementById('rightPanel');
 const totalSum = document.getElementById('totalSum');
+const noteArea = document.getElementById('noteArea');
+
+noteArea.value = localStorage.getItem("bossCalcNote")||"";
+noteArea.addEventListener("input", ()=>{ localStorage.setItem("bossCalcNote", noteArea.value); });
 
 document.getElementById('charNameInput').addEventListener('keydown',(e)=>{
   if(e.key==='Enter' && e.target.value.trim()!==''){
@@ -134,9 +107,14 @@ document.getElementById('charNameInput').addEventListener('keydown',(e)=>{
     const char = { name:charName, level:'', job:'', notes:['','',''], selected:false, bosses:[] };
     selectedCharacters.push(char);
     e.target.value='';
+    saveData();
     renderCharList();
   }
 });
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedCharacters));
+}
 
 function renderCharList(){
   charList.innerHTML='';
@@ -150,11 +128,11 @@ function renderCharList(){
       if(e.target.tagName==='INPUT') return;
       selectedCharacters.forEach(c=>c.selected=false);
       char.selected=!char.selected;
+      saveData();
       renderCharList();
       renderBossPanel();
     });
 
-    // 드래그
     div.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain',index); });
     div.addEventListener('dragover',e=>e.preventDefault());
     div.addEventListener('drop',e=>{
@@ -164,10 +142,10 @@ function renderCharList(){
       const temp = selectedCharacters[fromIndex];
       selectedCharacters.splice(fromIndex,1);
       selectedCharacters.splice(toIndex,0,temp);
+      saveData();
       renderCharList();
     });
 
-    // 첫번째 줄: 이름 / 금액 / 삭제
     const firstLine = document.createElement('div');
     firstLine.className='char-first-line';
 
@@ -179,31 +157,32 @@ function renderCharList(){
     const sumDiv=document.createElement('div');
     sumDiv.className='char-sum';
     sumDiv.innerText = `${sum.toFixed(2)} 억`;
+
     const del=document.createElement('span');
     del.className='char-delete';
     del.innerText='x';
     del.addEventListener('click',()=>{ 
       selectedCharacters.splice(index,1);
-      renderCharList(); renderBossPanel(); renderRightPanel();
+      saveData();
+      renderCharList(); renderBossPanel();
     });
 
     firstLine.appendChild(nameDiv);
     firstLine.appendChild(sumDiv);
     firstLine.appendChild(del);
 
-    // 두번째 줄: Lv / 직업 / 비고1~3
     const secondLine=document.createElement('div');
     secondLine.className='char-second-line';
 
     const lvInput=document.createElement('input');
     lvInput.placeholder='Lv';
     lvInput.value=char.level;
-    lvInput.addEventListener('input',()=>{char.level=lvInput.value;});
+    lvInput.addEventListener('input',()=>{char.level=lvInput.value; saveData(); });
 
     const jobInput=document.createElement('input');
     jobInput.placeholder='직업';
     jobInput.value=char.job;
-    jobInput.addEventListener('input',()=>{char.job=jobInput.value;});
+    jobInput.addEventListener('input',()=>{char.job=jobInput.value; saveData(); });
 
     secondLine.appendChild(lvInput);
     secondLine.appendChild(jobInput);
@@ -212,7 +191,7 @@ function renderCharList(){
       const noteInput=document.createElement('input');
       noteInput.placeholder=`비고${i+1}`;
       noteInput.value=char.notes[i];
-      noteInput.addEventListener('input',()=>{ char.notes[i]=noteInput.value; });
+      noteInput.addEventListener('input',()=>{ char.notes[i]=noteInput.value; saveData(); });
       secondLine.appendChild(noteInput);
     }
 
@@ -220,14 +199,11 @@ function renderCharList(){
     div.appendChild(secondLine);
     charList.appendChild(div);
   });
-  // 🔹 총합 표시 (왼쪽 패널 하단)
+
   let total = 0;
-  selectedCharacters.forEach(char=>{
-    total += char.bosses.reduce((a,b)=>a+b.basePrice,0);
-  });
+  selectedCharacters.forEach(char=>{ total += char.bosses.reduce((a,b)=>a+b.basePrice,0); });
   totalSum.innerText = `합계: ${total.toLocaleString()} 억`;
 }
-
 
 function renderBossPanel(){
   const selectedChar = selectedCharacters.find(c=>c.selected);
@@ -258,14 +234,12 @@ function renderBossPanel(){
       span.innerText=diff;
       span.classList.add(diff);
 
-      // 선택 여부
       const isSelected = selectedDiff === diff;
       if(isSelected) span.classList.add('selected');
 
-      // 회색 처리 조건
       if((selectedDiff && !isSelected) || (totalSelected >= 12 && !isSelected)){
-        span.style.opacity = '0.3'; // 회색처럼 보이게
-        span.style.pointerEvents = 'none'; // 클릭 막기
+        span.style.opacity = '0.3';
+        span.style.pointerEvents = 'none';
       } else {
         span.style.opacity = '1';
         span.style.pointerEvents = 'auto';
@@ -275,15 +249,12 @@ function renderBossPanel(){
         const alreadySelected = selectedChar.bosses.find(b=>b.name===boss.name && b.difficulty===diff);
         selectedChar.bosses = selectedChar.bosses.filter(b=>b.name!==boss.name);
         if(!alreadySelected){
-          if(selectedChar.bosses.length>=12){
-            alert('총 선택 난이도는 12개까지 가능합니다.');
-            return;
-          }
+          if(selectedChar.bosses.length>=12){ alert('총 선택 난이도는 12개까지 가능합니다.'); return; }
           selectedChar.bosses.push({name:boss.name,difficulty:diff,basePrice:boss.basePrice[diff]});
         }
+        saveData();
         renderBossPanel();
         renderCharList();
-        renderRightPanel();
       });
 
       diffDiv.appendChild(span);
@@ -294,13 +265,8 @@ function renderBossPanel(){
   });
 }
 
-function renderRightPanel(){
- 
-}
-
 renderCharList();
 renderBossPanel();
-renderRightPanel();
 </script>
 
 </body>
