@@ -31,7 +31,7 @@
 <input type="password" id="passwordInput" placeholder="비밀번호">
 
 <script>
-const PASSWORD = "0000"; // 원하는 비밀번호 설정
+const PASSWORD = "0327"; // 원하는 비밀번호 설정
 
 document.getElementById("passwordInput").addEventListener("keydown", function(e){
   if(e.key === "Enter"){
@@ -40,10 +40,10 @@ document.getElementById("passwordInput").addEventListener("keydown", function(e)
       window.location.href = "gif.html"; // ✅ 동일 탭에서 이동
     } else {
       this.value = "";
-      this.placeholder = "잘못된 비밀번호";
+      this.placeholder = "";
       this.style.borderColor = "red";
       setTimeout(() => {
-        this.placeholder = "비밀번호";
+        this.placeholder = "";
         this.style.borderColor = "#aaa";
       }, 1000);
     }
@@ -53,4 +53,3 @@ document.getElementById("passwordInput").addEventListener("keydown", function(e)
 
 </body>
 </html>
-
