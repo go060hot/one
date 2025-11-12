@@ -88,7 +88,7 @@
 
 <script>
 // ✅ 로그인 체크
-if (sessionStorage.getItem("auth") !== "true") {
+if (localStorage.getItem("auth") !== "true") {
   alert("접속 권한이 없습니다.");
   window.location.href = "index.html";
 }
@@ -305,3 +305,4 @@ renderRightPanel();
 
 </body>
 </html>
+
